@@ -1,0 +1,5 @@
+- name: Extract Prometheus CLI
+ unarchive:
+    src: "{{ role_path }}/files/prometheus-2.50.1.linux-amd64.tar.gz"
+    dest: /usr/local/bin/
+    remote_src: yes

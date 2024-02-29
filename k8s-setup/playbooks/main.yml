@@ -1,0 +1,77 @@
+- hosts: localhost
+  become: yes
+  tasks:
+    - include_role:
+        name: kind
+    - include_role:
+        name: helm
+    - include_role:
+        name: nginx_ingress
+    - include_role:
+        name: prometheus
+    - include_role:
+        name: prometheus_cli
+    - include_role:
+        name: kubectl
+
+    - name: Deploy backend service "foo"
+      template:
+        src: roles/backend_service/templates/backend_service_foo.yaml.j2
+        dest: /tmp/backend_service_foo.yaml
+      delegate_to: localhost
+
+    - name: Deploy backend service "bar"
+      template:
+        src: roles/backend_service/templates/backend_service_bar.yaml.j2
+        dest: /tmp/backend_service_bar.yaml
+      delegate_to: localhost
+
+    - name: Apply backend service "foo"
+      k8s:
+        state: present
+        definition: "{{ lookup('file', '/tmp/backend_service_foo.yaml') }}"
+      delegate_to: localhost
+
+    - name: Apply backend service "bar"
+      k8s:
+        state: present
+        definition: "{{ lookup('file', '/tmp/backend_service_bar.yaml') }}"
+      delegate_to: localhost
+
+# Ensure the above application is healthy
+    - name: Check rollout status of http-echo-bar without timeout
+      shell: kubectl rollout status deployment http-echo-bar --timeout=300s 
+
+    - name: Check rollout status of http-echo-foo without timeout
+      shell: kubectl rollout status deployment http-echo-foo --timeout=300s
+
+    - name: Watch http-echo-bar and http-echo-foo deployments
+      shell: watch kubectl get deployments http-echo-bar http-echo-foo
+      ignore_errors: true
+
+    - name: Deploy Ingress resource
+      template:
+        src: roles/backend_service/templates/ingress.yaml.j2
+        dest: /tmp/ingress.yaml
+      delegate_to: localhost
+
+    - name: Apply Ingress resource
+      k8s:
+        state: present
+        definition: "{{ lookup('file', '/tmp/ingress.yaml') }}"
+      delegate_to: localhost
+
+    - name: Run Benchmarking
+      command: >
+        wrk -t12 -c400 -d30s http://apps1.moneyhero.com/foo &&
+        wrk -t12 -c400 -d30s http://apps1.moneyhero.com/bar
+      become: yes
+    
+    - name: Fetch Prometheus Data
+      command: >
+        promql  --host "http://prometheus.moneyhero.com:9090" 'rate(http_requests_total{job="ingress-nginx"}[1m])' > avg_requests.csv &&
+        promql --host "http://prometheus.moneyhero.com:9090" 'avg by (instance) (container_memory_usage_bytes{job="ingress-nginx"})' > avg_memory.csv &&
+        promql --host "http://prometheus.moneyhero.com:9090" 'avg by (instance) (container_cpu_usage_seconds_total{job="ingress-nginx"})' > avg_cpu.csv
+      become: yes
+
+

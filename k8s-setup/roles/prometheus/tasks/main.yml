@@ -1,0 +1,8 @@
+- name: Add Helm repo for Prometheus
+ command: >
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts &&
+    helm repo update
+
+- name: Install Prometheus
+ command: >
+    helm install prometheus prometheus-community/prometheus --namespace prometheus --create-namespace

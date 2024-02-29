@@ -1,0 +1,10 @@
+- name: Download Helm binary
+  get_url:
+    url: https://get.helm.sh/helm-v3.7.1-linux-amd64.tar.gz
+    dest: /tmp/helm-v3.7.1-linux-amd64.tar.gz
+
+- name: Extract Helm binary
+  unarchive:
+    src: /tmp/helm-v3.7.1-linux-amd64.tar.gz
+    dest: /usr/local/bin
+    remote_src: yes

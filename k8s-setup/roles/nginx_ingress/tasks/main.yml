@@ -1,0 +1,8 @@
+- name: Add Helm repo for NGINX Ingress Controller
+ command: >
+    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx &&
+    helm repo update
+
+- name: Install NGINX Ingress Controller
+ command: >
+    helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --set controller.metrics.enabled=true 

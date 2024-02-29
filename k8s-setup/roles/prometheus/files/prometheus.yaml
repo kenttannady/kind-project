@@ -1,0 +1,5 @@
+  ingress:
+    ## If true, Prometheus server Ingress will be created
+    ##
+    enabled: true
+    hosts: prometheus.moneyhero.com
