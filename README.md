@@ -92,5 +92,3 @@ https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus/
 - Ensure you have the necessary privileges to execute commands; this may require `sudo` or root access.
 - This guide assumes compatibility with a Linux distribution that supports `apt` for package management. Adjustments may be needed for other distributions.
 - After completing these steps, you will have Python, Pip, and Ansible installed, along with a configured Kubernetes cluster.
-
-
